@@ -1,0 +1,21 @@
+{
+  "manifest_version": "2",
+  "api_version": "1",
+  "name": "Joplin extension",
+  "description": "Interfaces Joplin via pyjoplin",
+  "developer_name": "Jesus Briales",
+  "icon": "images/icon.png",
+  "options": {
+    "query_debounce": 0.3
+  },
+  "preferences": [
+    {
+      "id": "joplin_kw",
+      "type": "keyword",
+      "name": "Joplin",
+      "description": "Search and edit or create note",
+      "default_value": "jp"
+    }
+  ]
+}
+
