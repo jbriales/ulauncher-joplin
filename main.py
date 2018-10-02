@@ -16,8 +16,6 @@ class JoplinExtension(Extension):
         super(JoplinExtension, self).__init__()
         self.subscribe(KeywordQueryEvent, KeywordQueryEventListener())
         self.subscribe(ItemEnterEvent, ItemEnterEventListener())
-        self.last_query = ""
-        self.last_search_str = ""
         self.items = list()
 
 
@@ -59,11 +57,15 @@ class KeywordQueryEventListener(EventListener):
                 # print("Note: {title}\n{body}\n".format(**idx_note))
                 # print("Note: {title}\nSnippet:\n{snippet}\n".format(**note))
 
+                idx_item = len(extension.items)
                 item = ExtensionSmallResultItem(
+                # item = ExtensionResultItem(
                     icon='images/icon.png',
                     name='NOTE: %s' % note['title'],
                     description=note['snippet'],
-                    on_enter=HideWindowAction()
+                    # description=note['body'],
+                    on_enter=ExtensionCustomAction({'type': 'enter', 'idx': idx_item}, keep_app_open=True),
+                    on_alt_enter=ExtensionCustomAction({'type': 'alt', 'idx': idx_item}, keep_app_open=True)
                 )
                 extension.items.append(item)
                 # on_enter_data = {'new_name': 'Item %s was clicked' % i}
@@ -85,12 +87,23 @@ class ItemEnterEventListener(EventListener):
         # event is instance of ItemEnterEvent
 
         data = event.get_data()
-        # do additional actions here...
+        if data['type'] == 'alt':
+            # Display details of chosen entry
+            idx_item = data['idx']
+            item = extension.items[idx_item]
+            # Substitute this entry by detailed one
+            detailed_item = ExtensionResultItem(
+                icon='images/icon.png',
+                name=item.get_name(),
+                description=item.get_description(None),
+                # on_enter=ExtensionCustomAction({'type': 'enter', 'idx': idx_item}, keep_app_open=True),
+                # on_alt_enter=ExtensionCustomAction({'type': 'alt', 'idx': idx_item}, keep_app_open=True)
+            )
+            extension.items[idx_item] = detailed_item
 
-        # you may want to return another list of results
-        return RenderResultListAction([ExtensionResultItem(icon='images/icon.png',
-                                                           name=data['new_name'],
-                                                           on_enter=HideWindowAction())])
+            return RenderResultListAction(extension.items)
+
+        return False
 
 
 if __name__ == '__main__':
