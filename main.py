@@ -1,4 +1,7 @@
-from pyjoplin.main import search, edit
+import subprocess
+import webbrowser
+
+from pyjoplin.main import new, search, edit
 
 from ulauncher.api.client.Extension import Extension
 from ulauncher.api.client.EventListener import EventListener
@@ -44,8 +47,14 @@ class KeywordQueryEventListener(EventListener):
             extension.items.append(
                 ExtensionSmallResultItem(
                     icon='images/chrome.png',
-                    name='New search: %s' % search_str,
-                    on_enter=HideWindowAction()
+                    name='New search note: %s' % search_str,
+                    on_enter=ExtensionCustomAction(
+                        {
+                            'type': 'new-search',
+                            'str': search_str,
+                        },
+                        keep_app_open=True
+                    ),
                 )
             )
 
@@ -114,6 +123,21 @@ class ItemEnterEventListener(EventListener):
             print("Opening note edition")
             # TODO: Maybe open in an independent process/thread?
             edit(data['uid'])
+            return HideWindowAction()
+
+        elif data['type'] == 'new-search':
+            # Open browser and create new note
+            query = data['str']
+            # Build URL for Google search
+            url_google = "https://www.google.com/search?q=" + query.replace(' ', "+")
+            # Focus 'search' workspace now
+            subprocess.call("i3-msg workspace search", shell=True)
+            # Open new browser with Google and calendar search
+            browser = webbrowser.get('google-chrome')
+            browser.open(url_google, new=1, autoraise=True)
+            # Create new note
+            new_uid = new(query, 'search')
+            edit(new_uid)
             return HideWindowAction()
 
         return False
