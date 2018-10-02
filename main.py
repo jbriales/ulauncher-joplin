@@ -61,13 +61,18 @@ class KeywordQueryEventListener(EventListener):
                     # description=note['body'],
                     on_enter=ExtensionCustomAction(
                         {
+                            'type': 'search-enter2',
+                            'idx': idx_item,
+                            'uid': note['uid']
+                        },
+                        keep_app_open=True),
+                    on_alt_enter=ExtensionCustomAction(
+                        {
                             'type': 'search-enter1',
                             'idx': idx_item,
                             'uid': note['uid']
                         },
                         keep_app_open=True),
-                    # on_enter=ShowItemDetailAndRenderResultListAction(keep_app_open=True),
-                    # on_alt_enter=ExtensionCustomAction({'type': 'alt', 'idx': idx_item}, keep_app_open=True)
                 )
                 extension.items.append(item)
 
