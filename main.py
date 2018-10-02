@@ -18,52 +18,54 @@ class JoplinExtension(Extension):
         self.subscribe(ItemEnterEvent, ItemEnterEventListener())
         self.last_query = ""
         self.last_search_str = ""
-        self.last_items = list()
+        self.items = list()
 
 
 class KeywordQueryEventListener(EventListener):
 
     def on_event(self, event, extension):
         # Get search query from event
-        search_str = event.query.lstrip(extension.preferences['joplin_kw'] + ' ')
+        search_str_start_index = len(extension.preferences['joplin_kw'])+1
+        search_str = event.query[search_str_start_index:]
 
-        print("Last search string: %s" % extension.last_search_str)
-        print("Last extension query: %s" % extension.last_query)
-        print("Current query: %s" % search_str)
+        # NOTE: Wait for space at the end of query to trigger search
+        last_query_character = search_str[-1:]
+        if last_query_character != ' ':
+            # Skip search, use same items as before (stored in extension)
+            pass
 
-        # Find fixed part from last query
-        previous_terms = extension.last_query.split()
-        current_terms = search_str.split()
-        # Find common head elements
-        fixed_terms = list()
-        for term, i in enumerate(previous_terms):
-            if term == current_terms[i]:
-                fixed_terms.append(term)
-            else:
-                break
-        fixed_search_str = ' '.join(fixed_terms)
-
-        # Update last query stored in extension
-        extension.last_query = search_str
-
-        if fixed_search_str == extension.last_search_str:
-            # Skip search, use same items as before
-            items = extension.last_items
+            if not search_str:
+                extension.items = [
+                    ExtensionResultItem(
+                        icon='images/search.png',
+                        name='Write search query ended with space...'
+                    )
+                ]
         else:
-            print("Making new search")
-            found_index_notes = search(fixed_search_str)
-            items = list()
-            for idx_note in found_index_notes:
-                # print("Note: {title}\n{body}\n".format(**idx_note))
-                print("Note: {title}\n{snippet}\n".format(**idx_note))
-
-                item = ExtensionResultItem(
-                    icon='images/icon.png',
-                    name='NOTE: %s' % idx_note['title'],
-                    description=idx_note['snippet'],
+            extension.items = list()
+            extension.items.append(
+                ExtensionSmallResultItem(
+                    icon='images/chrome.png',
+                    name='New search: %s' % search_str,
                     on_enter=HideWindowAction()
                 )
-                items.append(item)
+            )
+
+            print("Searching database")
+            found_notes = search(search_str)
+            # Rebuild found items list
+
+            for note in found_notes:
+                # print("Note: {title}\n{body}\n".format(**idx_note))
+                # print("Note: {title}\nSnippet:\n{snippet}\n".format(**note))
+
+                item = ExtensionSmallResultItem(
+                    icon='images/icon.png',
+                    name='NOTE: %s' % note['title'],
+                    description=note['snippet'],
+                    on_enter=HideWindowAction()
+                )
+                extension.items.append(item)
                 # on_enter_data = {'new_name': 'Item %s was clicked' % i}
                 # on_alt_enter_data = {'new_name': 'Item %s was alt-entered' % i}
                 # items.append(ExtensionSmallResultItem(
@@ -74,7 +76,7 @@ class KeywordQueryEventListener(EventListener):
                 #     on_alt_enter=ExtensionCustomAction(on_alt_enter_data, keep_app_open=True)
                 # ))
 
-        return RenderResultListAction(items)
+        return RenderResultListAction(extension.items)
 
 
 class ItemEnterEventListener(EventListener):
