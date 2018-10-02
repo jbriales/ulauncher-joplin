@@ -1,4 +1,4 @@
-from pyjoplin.main import search
+from pyjoplin.main import search, edit
 
 from ulauncher.api.client.Extension import Extension
 from ulauncher.api.client.EventListener import EventListener
@@ -51,32 +51,25 @@ class KeywordQueryEventListener(EventListener):
 
             print("Searching database")
             found_notes = search(search_str)
-            # Rebuild found items list
-
+            # Build result list of found items
             for note in found_notes:
-                # print("Note: {title}\n{body}\n".format(**idx_note))
-                # print("Note: {title}\nSnippet:\n{snippet}\n".format(**note))
-
                 idx_item = len(extension.items)
                 item = ExtensionSmallResultItem(
-                # item = ExtensionResultItem(
                     icon='images/icon.png',
                     name='NOTE: %s' % note['title'],
                     description=note['snippet'],
                     # description=note['body'],
-                    on_enter=ExtensionCustomAction({'type': 'enter', 'idx': idx_item}, keep_app_open=True),
-                    on_alt_enter=ExtensionCustomAction({'type': 'alt', 'idx': idx_item}, keep_app_open=True)
+                    on_enter=ExtensionCustomAction(
+                        {
+                            'type': 'search-enter1',
+                            'idx': idx_item,
+                            'uid': note['uid']
+                        },
+                        keep_app_open=True),
+                    # on_enter=ShowItemDetailAndRenderResultListAction(keep_app_open=True),
+                    # on_alt_enter=ExtensionCustomAction({'type': 'alt', 'idx': idx_item}, keep_app_open=True)
                 )
                 extension.items.append(item)
-                # on_enter_data = {'new_name': 'Item %s was clicked' % i}
-                # on_alt_enter_data = {'new_name': 'Item %s was alt-entered' % i}
-                # items.append(ExtensionSmallResultItem(
-                #     icon='images/icon.png',
-                #     name='Item %s' % i,
-                #     description='Item description %s' % i,
-                #     on_enter=ExtensionCustomAction(on_enter_data, keep_app_open=True),
-                #     on_alt_enter=ExtensionCustomAction(on_alt_enter_data, keep_app_open=True)
-                # ))
 
         return RenderResultListAction(extension.items)
 
@@ -87,8 +80,8 @@ class ItemEnterEventListener(EventListener):
         # event is instance of ItemEnterEvent
 
         data = event.get_data()
-        if data['type'] == 'alt':
-            # Display details of chosen entry
+        if data['type'] == 'search-enter1':
+            # Make chosen entry detailed
             idx_item = data['idx']
             item = extension.items[idx_item]
             # Substitute this entry by detailed one
@@ -96,12 +89,27 @@ class ItemEnterEventListener(EventListener):
                 icon='images/icon.png',
                 name=item.get_name(),
                 description=item.get_description(None),
-                # on_enter=ExtensionCustomAction({'type': 'enter', 'idx': idx_item}, keep_app_open=True),
-                # on_alt_enter=ExtensionCustomAction({'type': 'alt', 'idx': idx_item}, keep_app_open=True)
+                on_enter=ExtensionCustomAction(
+                    {
+                        'type': 'search-enter2',
+                        'idx': idx_item,
+                        'uid': data['uid']
+                    },
+                    keep_app_open=True),
             )
             extension.items[idx_item] = detailed_item
 
+            # Ensure all other entries are small
+            # TODO
+
             return RenderResultListAction(extension.items)
+
+        elif data['type'] == 'search-enter2':
+            # Edit chosen note
+            print("Opening note edition")
+            # TODO: Maybe open in an independent process/thread?
+            edit(data['uid'])
+            return HideWindowAction()
 
         return False
 
