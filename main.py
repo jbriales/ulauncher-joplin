@@ -1,7 +1,7 @@
 import subprocess
 import webbrowser
 
-from pyjoplin.main import new, search, edit
+import pyjoplin
 
 from ulauncher.api.client.Extension import Extension
 from ulauncher.api.client.EventListener import EventListener
@@ -46,7 +46,7 @@ class KeywordQueryEventListener(EventListener):
             extension.items = list()
             extension.items.append(
                 ExtensionSmallResultItem(
-                    icon='images/chrome.png',
+                    icon='images/note-chrome-add-64.png',
                     name='New search note: %s' % search_str,
                     on_enter=ExtensionCustomAction(
                         {
@@ -59,13 +59,13 @@ class KeywordQueryEventListener(EventListener):
             )
 
             print("Searching database")
-            found_notes = search(search_str)
+            found_notes = pyjoplin.search(search_str)
             # Build result list of found items
             for note in found_notes:
                 idx_item = len(extension.items)
                 item = ExtensionSmallResultItem(
-                    icon='images/icon.png',
-                    name='NOTE: %s' % note['title'],
+                    icon='images/joplin.png',
+                    name=note['title'],
                     description=note['snippet'],
                     # description=note['body'],
                     on_enter=ExtensionCustomAction(
@@ -100,7 +100,7 @@ class ItemEnterEventListener(EventListener):
             item = extension.items[idx_item]
             # Substitute this entry by detailed one
             detailed_item = ExtensionResultItem(
-                icon='images/icon.png',
+                icon='images/joplin.png',
                 name=item.get_name(),
                 description=item.get_description(None),
                 on_enter=ExtensionCustomAction(
@@ -122,12 +122,12 @@ class ItemEnterEventListener(EventListener):
             # Edit chosen note
             print("Opening note edition")
             # TODO: Maybe open in an independent process/thread?
-            edit(data['uid'])
+            pyjoplin.edit(data['uid'])
             return HideWindowAction()
 
         elif data['type'] == 'new-search':
             # Open browser and create new note
-            query = data['str']
+            query = data['str'].strip()
             # Build URL for Google search
             url_google = "https://www.google.com/search?q=" + query.replace(' ', "+")
             # Focus 'search' workspace now
@@ -135,9 +135,8 @@ class ItemEnterEventListener(EventListener):
             # Open new browser with Google and calendar search
             browser = webbrowser.get('google-chrome')
             browser.open(url_google, new=1, autoraise=True)
-            # Create new note
-            new_uid = new(query, 'search')
-            edit(new_uid)
+            # Create new note and edit it
+            pyjoplin.new_and_edit(query, notebook='search')
             return HideWindowAction()
 
         return False
