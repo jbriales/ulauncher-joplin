@@ -51,7 +51,14 @@ class KeywordQueryEventListener(EventListener):
                     name='New search note: %s' % search_str,
                     on_enter=ExtensionCustomAction(
                         {
-                            'type': 'new-search',
+                            'type': 'new-search-and-note',
+                            'str': search_str,
+                        },
+                        keep_app_open=True
+                    ),
+                    on_alt_enter=ExtensionCustomAction(
+                        {
+                            'type': 'new-note',
                             'str': search_str,
                         },
                         keep_app_open=True
@@ -133,7 +140,7 @@ class ItemEnterEventListener(EventListener):
             proc = subprocess.Popen(cmd, shell=True)
             return HideWindowAction()
 
-        elif data['type'] == 'new-search':
+        elif data['type'] == 'new-search-and-note':
             # Open browser and create new note
             query = data['str'].strip()
             # Build URL for Google search
@@ -144,6 +151,13 @@ class ItemEnterEventListener(EventListener):
             browser = webbrowser.get('google-chrome')
             browser.open(url_google, new=1, autoraise=True)
             # Create new note and edit it
+            cmd = 'pyjoplin new_and_edit \'%s\' --notebook \'%s\'' % (query, 'search')
+            proc = subprocess.Popen(cmd, shell=True)
+            return HideWindowAction()
+
+        elif data['type'] == 'new-note':
+            # Create new note and edit it
+            query = data['str'].strip()
             cmd = 'pyjoplin new_and_edit \'%s\' --notebook \'%s\'' % (query, 'search')
             proc = subprocess.Popen(cmd, shell=True)
             return HideWindowAction()
