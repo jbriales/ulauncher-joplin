@@ -78,7 +78,7 @@ class KeywordQueryEventListener(EventListener):
                         keep_app_open=True),
                     on_alt_enter=ExtensionCustomAction(
                         {
-                            'type': 'search-enter1',
+                            'type': 'imfeelinglucky',
                             'idx': idx_item,
                             'uid': note['uid']
                         },
@@ -123,6 +123,13 @@ class ItemEnterEventListener(EventListener):
             # Edit chosen note
             print("Opening note edition")
             cmd = 'pyjoplin edit %s' % data['uid']
+            proc = subprocess.Popen(cmd, shell=True)
+            return HideWindowAction()
+
+        elif data['type'] == 'imfeelinglucky':
+            # Try to get solution code stub
+            print("Extracting code stub")
+            cmd = 'pyjoplin imfeelinglucky %s' % data['uid']
             proc = subprocess.Popen(cmd, shell=True)
             return HideWindowAction()
 
