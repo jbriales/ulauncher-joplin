@@ -11,6 +11,7 @@ from ulauncher.api.shared.item.ExtensionSmallResultItem import ExtensionSmallRes
 from ulauncher.api.shared.action.RenderResultListAction import RenderResultListAction
 from ulauncher.api.shared.action.HideWindowAction import HideWindowAction
 from ulauncher.api.shared.action.ExtensionCustomAction import ExtensionCustomAction
+# from ulauncher.api.shared.action.RunScriptAction import RunScriptAction
 
 
 class JoplinExtension(Extension):
@@ -121,8 +122,8 @@ class ItemEnterEventListener(EventListener):
         elif data['type'] == 'search-enter2':
             # Edit chosen note
             print("Opening note edition")
-            # TODO: Maybe open in an independent process/thread?
-            pyjoplin.edit(data['uid'])
+            cmd = 'pyjoplin edit %s' % data['uid']
+            proc = subprocess.Popen(cmd, shell=True)
             return HideWindowAction()
 
         elif data['type'] == 'new-search':
@@ -136,7 +137,8 @@ class ItemEnterEventListener(EventListener):
             browser = webbrowser.get('google-chrome')
             browser.open(url_google, new=1, autoraise=True)
             # Create new note and edit it
-            pyjoplin.new_and_edit(query, notebook='search')
+            cmd = 'pyjoplin new_and_edit \'%s\' --notebook \'%s\'' % (query, 'search')
+            proc = subprocess.Popen(cmd, shell=True)
             return HideWindowAction()
 
         return False
