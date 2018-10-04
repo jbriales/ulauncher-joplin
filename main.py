@@ -17,6 +17,7 @@ from ulauncher.api.shared.action.ExtensionCustomAction import ExtensionCustomAct
 # from ulauncher.api.shared.action.RunScriptAction import RunScriptAction
 
 from history import RecentHistory
+from items import create_small_note_entry
 
 
 def create_default_items_list(history_uids):
@@ -26,25 +27,7 @@ def create_default_items_list(history_uids):
     notes = pyjoplin.get_notes_by_id(history_uids[::-1], ordered=True)
     for note in notes:
         idx_item = len(items)
-        item = ExtensionSmallResultItem(
-            icon='images/joplin.png',
-            name=note['title'],
-            # description=note['body'],
-            on_enter=ExtensionCustomAction(
-                {
-                    'type': 'search-enter2',
-                    'idx': idx_item,
-                    'uid': note['id']
-                },
-                keep_app_open=True),
-            on_alt_enter=ExtensionCustomAction(
-                {
-                    'type': 'imfeelinglucky',
-                    'idx': idx_item,
-                    'uid': note['id']
-                },
-                keep_app_open=True),
-        )
+        item = create_small_note_entry(note, idx_item)
         items.append(item)
 
     # Create last entry with instructions
@@ -109,26 +92,7 @@ class KeywordQueryEventListener(EventListener):
             # Build result list of found items
             for note in found_notes:
                 idx_item = len(extension.items)
-                item = ExtensionSmallResultItem(
-                    icon='images/joplin.png',
-                    name=note['title'],
-                    description=note['snippet'],
-                    # description=note['body'],
-                    on_enter=ExtensionCustomAction(
-                        {
-                            'type': 'search-enter2',
-                            'idx': idx_item,
-                            'uid': note['uid']
-                        },
-                        keep_app_open=True),
-                    on_alt_enter=ExtensionCustomAction(
-                        {
-                            'type': 'imfeelinglucky',
-                            'idx': idx_item,
-                            'uid': note['uid']
-                        },
-                        keep_app_open=True),
-                )
+                item = create_small_note_entry(note, idx_item)
                 extension.items.append(item)
 
         return RenderResultListAction(extension.items)
