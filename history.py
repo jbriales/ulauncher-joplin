@@ -40,7 +40,7 @@ class RecentHistory(list):
         """
         if uid in self:
             self.remove(uid)
-        MAX_NUM_ENTRIES = 5
+        MAX_NUM_ENTRIES = 15
         if len(self) >= MAX_NUM_ENTRIES:
             # TODO: Better use deque
             self.pop(0)

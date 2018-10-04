@@ -187,17 +187,19 @@ class ItemEnterEventListener(EventListener):
             browser = webbrowser.get('google-chrome')
             browser.open(url_google, new=1, autoraise=True)
             # Create new note and edit it
-            cmd = 'pyjoplin new_and_edit \'%s\' --notebook \'%s\'' % (query, 'search')
+            new_uid = pyjoplin.new(query, notebook='search')
+            extension.history_uids.append(new_uid)
+            cmd = 'pyjoplin edit %s' % new_uid
             proc = subprocess.Popen(cmd, shell=True)
-            # extension.history_uids.append(data['uid'])
             return HideWindowAction()
 
         elif data['type'] == 'new-note':
             # Create new note and edit it
             query = data['str'].strip()
-            cmd = 'pyjoplin new_and_edit \'%s\' --notebook \'%s\'' % (query, 'search')
+            new_uid = pyjoplin.new(query, notebook='search')
+            extension.history_uids.append(new_uid)
+            cmd = 'pyjoplin edit %s' % new_uid
             proc = subprocess.Popen(cmd, shell=True)
-            # extension.history_uids.append(data['uid'])
             return HideWindowAction()
 
         return False
