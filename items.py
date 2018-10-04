@@ -7,6 +7,8 @@ from ulauncher.api.shared.item.ExtensionResultItem import ExtensionResultItem
 from ulauncher.api.shared.item.ExtensionSmallResultItem import ExtensionSmallResultItem
 from ulauncher.api.shared.action.ExtensionCustomAction import ExtensionCustomAction
 
+from responses import *
+
 
 def create_note_item(note, idx_item):
     """
@@ -29,15 +31,13 @@ def create_note_item(note, idx_item):
         # description=note['body'],
         on_enter=ExtensionCustomAction(
             {
-                'type': 'search-enter2',
-                'idx': idx_item,
+                'func': open_note_edition_action,
                 'uid': note_id
             },
             keep_app_open=True),
         on_alt_enter=ExtensionCustomAction(
             {
-                'type': 'imfeelinglucky',
-                'idx': idx_item,
+                'func': imfeelinglucky_action,
                 'uid': note_id
             },
             keep_app_open=True),
@@ -55,16 +55,43 @@ def create_search_item(search_str):
         name='New search note: %s' % search_str,
         on_enter=ExtensionCustomAction(
             {
-                'type': 'new-search-and-note',
-                'str': search_str,
+                'func': open_new_search_and_note_action,
+                'str_search': search_str,
             },
             keep_app_open=True
         ),
         on_alt_enter=ExtensionCustomAction(
             {
-                'type': 'new-note',
-                'str': search_str,
+                'func': open_new_note_action,
+                'str_search': search_str,
             },
             keep_app_open=True
         ),
     )
+
+
+def create_default_items_list(history_uids, do_history_clean=True):
+    items = list()
+
+    # Find notes for ids in history
+    notes = pyjoplin.get_notes_by_id(history_uids[::-1], ordered=True)
+    if do_history_clean:
+        # Remove any not found history uids
+        found_uids = [note['id'] for note in notes]
+        clean_history_uids = [uid for uid in history_uids if uid in found_uids]
+
+    # Add entries from recent history
+    for note in notes:
+        idx_item = len(items)
+        item = create_note_item(note, idx_item)
+        items.append(item)
+
+    # Create last entry with instructions
+    items.append(
+        ExtensionSmallResultItem(
+            icon='images/search.png',
+            name='Or write search query ended with space...'
+        )
+    )
+
+    return items, clean_history_uids

@@ -38,6 +38,7 @@ class RecentHistory(list):
         """ Same as list.append(val),
         but ensures no repeated values by removing if existing
         """
+        # Avoid repetitions of uid
         if uid in self:
             self.remove(uid)
         MAX_NUM_ENTRIES = 15
