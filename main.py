@@ -32,18 +32,24 @@ class KeywordQueryEventListener(EventListener):
         # Get search query from event
         search_str_start_index = len(extension.preferences['joplin_kw'])+1
         search_str = event.query[search_str_start_index:]
-        if not search_str:
-            # Corner case:
-            # Reset stored items if empty list
-            extension.items = None
-
-        # NOTE: Wait for space at the end of query to trigger search
+        # Save last query character (space gives special behavior)
         last_query_character = search_str[-1:]
-        if last_query_character == ' ' and search_str.strip():
-            # If trigger character ' ' present AND search query not empty
+        # Remove trailing whitespace from query
+        search_str = search_str.strip()
+        if not search_str:
+            # Corner case: No search query, empty list
+            # Populate default history view
+            extension.items = create_default_items_list(extension.history_uids, do_history_clean=True)
+        else:
+            # If there is a non-empty query
+
             # Trigger search of query in database and build search result list
+            fts_search_pattern = search_str
+            if last_query_character != ' ':
+                # Probably incomplete word (so use prefix query type, e.g. 'py*')
+                fts_search_pattern += '*'
             print("Searching database")
-            found_notes = pyjoplin.search(search_str)
+            found_notes = pyjoplin.search(fts_search_pattern)
 
             extension.items = list()
             extension.items.append(
@@ -53,13 +59,6 @@ class KeywordQueryEventListener(EventListener):
                 idx_item = len(extension.items)
                 item = create_note_item(note, idx_item)
                 extension.items.append(item)
-        else:
-            if not extension.items:
-                # Populate default history view
-                extension.items = create_default_items_list(extension.history_uids, do_history_clean=True)
-            else:
-                # Skip search, use same items as before (stored in extension)
-                pass
 
         return RenderResultListAction(extension.items)
 
