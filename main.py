@@ -43,13 +43,7 @@ class KeywordQueryEventListener(EventListener):
             pass
 
             if not search_str:
-                # Create first entry with instructions
-                extension.items = [
-                    ExtensionResultItem(
-                        icon='images/search.png',
-                        name='Write search query ended with space...'
-                    )
-                ]
+                extension.items = list()
 
                 # Add entries from recent history
                 # notes = pyjoplin.get_notes_by_id(reversed(extension.history_uids), ordered=True)
@@ -76,6 +70,14 @@ class KeywordQueryEventListener(EventListener):
                             keep_app_open=True),
                     )
                     extension.items.append(item)
+
+                # Create last entry with instructions
+                extension.items.append(
+                    ExtensionSmallResultItem(
+                        icon='images/search.png',
+                        name='Or write search query ended with space...'
+                    )
+                )
 
         else:
             extension.items = list()
