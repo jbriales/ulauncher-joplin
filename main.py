@@ -17,7 +17,7 @@ from ulauncher.api.shared.action.ExtensionCustomAction import ExtensionCustomAct
 # from ulauncher.api.shared.action.RunScriptAction import RunScriptAction
 
 from history import RecentHistory
-from items import create_small_note_entry
+from items import create_note_item, create_search_item
 
 
 def create_default_items_list(history_uids):
@@ -27,7 +27,7 @@ def create_default_items_list(history_uids):
     notes = pyjoplin.get_notes_by_id(history_uids[::-1], ordered=True)
     for note in notes:
         idx_item = len(items)
-        item = create_small_note_entry(note, idx_item)
+        item = create_note_item(note, idx_item)
         items.append(item)
 
     # Create last entry with instructions
@@ -66,33 +66,16 @@ class KeywordQueryEventListener(EventListener):
 
         else:
             extension.items = list()
-            extension.items.append(
-                ExtensionSmallResultItem(
-                    icon='images/note-chrome-add-64.png',
-                    name='New search note: %s' % search_str,
-                    on_enter=ExtensionCustomAction(
-                        {
-                            'type': 'new-search-and-note',
-                            'str': search_str,
-                        },
-                        keep_app_open=True
-                    ),
-                    on_alt_enter=ExtensionCustomAction(
-                        {
-                            'type': 'new-note',
-                            'str': search_str,
-                        },
-                        keep_app_open=True
-                    ),
-                )
-            )
+            # Add first item for new search and note
+            item = create_search_item(search_str)
+            extension.items.append(item)
 
             print("Searching database")
             found_notes = pyjoplin.search(search_str)
             # Build result list of found items
             for note in found_notes:
                 idx_item = len(extension.items)
-                item = create_small_note_entry(note, idx_item)
+                item = create_note_item(note, idx_item)
                 extension.items.append(item)
 
         return RenderResultListAction(extension.items)
