@@ -19,14 +19,53 @@ from ulauncher.api.shared.action.ExtensionCustomAction import ExtensionCustomAct
 from history import RecentHistory
 
 
+def create_default_items_list(history_uids):
+    items = list()
+
+    # Add entries from recent history
+    notes = pyjoplin.get_notes_by_id(history_uids[::-1], ordered=True)
+    for note in notes:
+        idx_item = len(items)
+        item = ExtensionSmallResultItem(
+            icon='images/joplin.png',
+            name=note['title'],
+            # description=note['body'],
+            on_enter=ExtensionCustomAction(
+                {
+                    'type': 'search-enter2',
+                    'idx': idx_item,
+                    'uid': note['id']
+                },
+                keep_app_open=True),
+            on_alt_enter=ExtensionCustomAction(
+                {
+                    'type': 'imfeelinglucky',
+                    'idx': idx_item,
+                    'uid': note['id']
+                },
+                keep_app_open=True),
+        )
+        items.append(item)
+
+    # Create last entry with instructions
+    items.append(
+        ExtensionSmallResultItem(
+            icon='images/search.png',
+            name='Or write search query ended with space...'
+        )
+    )
+
+    return items
+
+
 class JoplinExtension(Extension):
 
     def __init__(self):
         super(JoplinExtension, self).__init__()
         self.subscribe(KeywordQueryEvent, KeywordQueryEventListener())
         self.subscribe(ItemEnterEvent, ItemEnterEventListener())
-        self.items = list()
         self.history_uids = RecentHistory()
+        self.items = create_default_items_list(self.history_uids)
 
 
 class KeywordQueryEventListener(EventListener):
@@ -41,43 +80,6 @@ class KeywordQueryEventListener(EventListener):
         if last_query_character != ' ':
             # Skip search, use same items as before (stored in extension)
             pass
-
-            if not search_str:
-                extension.items = list()
-
-                # Add entries from recent history
-                # notes = pyjoplin.get_notes_by_id(reversed(extension.history_uids), ordered=True)
-                notes = pyjoplin.get_notes_by_id(extension.history_uids[::-1], ordered=True)
-                for note in notes:
-                    idx_item = len(extension.items)
-                    item = ExtensionSmallResultItem(
-                        icon='images/joplin.png',
-                        name=note['title'],
-                        # description=note['body'],
-                        on_enter=ExtensionCustomAction(
-                            {
-                                'type': 'search-enter2',
-                                'idx': idx_item,
-                                'uid': note['id']
-                            },
-                            keep_app_open=True),
-                        on_alt_enter=ExtensionCustomAction(
-                            {
-                                'type': 'imfeelinglucky',
-                                'idx': idx_item,
-                                'uid': note['id']
-                            },
-                            keep_app_open=True),
-                    )
-                    extension.items.append(item)
-
-                # Create last entry with instructions
-                extension.items.append(
-                    ExtensionSmallResultItem(
-                        icon='images/search.png',
-                        name='Or write search query ended with space...'
-                    )
-                )
 
         else:
             extension.items = list()
