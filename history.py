@@ -41,6 +41,7 @@ class RecentHistory(list):
         # Avoid repetitions of uid
         if uid in self:
             self.remove(uid)
+        # TODO: Turn this into preference option
         MAX_NUM_ENTRIES = 15
         if len(self) >= MAX_NUM_ENTRIES:
             # TODO: Better use deque
