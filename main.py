@@ -166,7 +166,6 @@ class ItemEnterEventListener(EventListener):
             cmd = 'pyjoplin edit %s' % data['uid']
             proc = subprocess.Popen(cmd, shell=True)
             extension.history_uids.append(data['uid'])
-            extension.history_uids.save()
             return HideWindowAction()
 
         elif data['type'] == 'imfeelinglucky':
@@ -175,7 +174,6 @@ class ItemEnterEventListener(EventListener):
             cmd = 'pyjoplin imfeelinglucky %s' % data['uid']
             proc = subprocess.Popen(cmd, shell=True)
             extension.history_uids.append(data['uid'])
-            extension.history_uids.save()
             return HideWindowAction()
 
         elif data['type'] == 'new-search-and-note':
@@ -192,7 +190,6 @@ class ItemEnterEventListener(EventListener):
             cmd = 'pyjoplin new_and_edit \'%s\' --notebook \'%s\'' % (query, 'search')
             proc = subprocess.Popen(cmd, shell=True)
             # extension.history_uids.append(data['uid'])
-            # extension.history_uids.save()
             return HideWindowAction()
 
         elif data['type'] == 'new-note':
@@ -201,7 +198,6 @@ class ItemEnterEventListener(EventListener):
             cmd = 'pyjoplin new_and_edit \'%s\' --notebook \'%s\'' % (query, 'search')
             proc = subprocess.Popen(cmd, shell=True)
             # extension.history_uids.append(data['uid'])
-            # extension.history_uids.save()
             return HideWindowAction()
 
         return False
