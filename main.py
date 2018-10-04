@@ -1,3 +1,6 @@
+# coding=utf-8
+
+import os
 import subprocess
 import webbrowser
 
@@ -13,6 +16,8 @@ from ulauncher.api.shared.action.HideWindowAction import HideWindowAction
 from ulauncher.api.shared.action.ExtensionCustomAction import ExtensionCustomAction
 # from ulauncher.api.shared.action.RunScriptAction import RunScriptAction
 
+from history import RecentHistory
+
 
 class JoplinExtension(Extension):
 
@@ -21,6 +26,7 @@ class JoplinExtension(Extension):
         self.subscribe(KeywordQueryEvent, KeywordQueryEventListener())
         self.subscribe(ItemEnterEvent, ItemEnterEventListener())
         self.items = list()
+        self.history_uids = RecentHistory()
 
 
 class KeywordQueryEventListener(EventListener):
@@ -37,12 +43,40 @@ class KeywordQueryEventListener(EventListener):
             pass
 
             if not search_str:
+                # Create first entry with instructions
                 extension.items = [
                     ExtensionResultItem(
                         icon='images/search.png',
                         name='Write search query ended with space...'
                     )
                 ]
+
+                # Add entries from recent history
+                # notes = pyjoplin.get_notes_by_id(reversed(extension.history_uids), ordered=True)
+                notes = pyjoplin.get_notes_by_id(extension.history_uids[::-1], ordered=True)
+                for note in notes:
+                    idx_item = len(extension.items)
+                    item = ExtensionSmallResultItem(
+                        icon='images/joplin.png',
+                        name=note['title'],
+                        # description=note['body'],
+                        on_enter=ExtensionCustomAction(
+                            {
+                                'type': 'search-enter2',
+                                'idx': idx_item,
+                                'uid': note['id']
+                            },
+                            keep_app_open=True),
+                        on_alt_enter=ExtensionCustomAction(
+                            {
+                                'type': 'imfeelinglucky',
+                                'idx': idx_item,
+                                'uid': note['id']
+                            },
+                            keep_app_open=True),
+                    )
+                    extension.items.append(item)
+
         else:
             extension.items = list()
             extension.items.append(
@@ -131,6 +165,8 @@ class ItemEnterEventListener(EventListener):
             print("Opening note edition")
             cmd = 'pyjoplin edit %s' % data['uid']
             proc = subprocess.Popen(cmd, shell=True)
+            extension.history_uids.append(data['uid'])
+            extension.history_uids.save()
             return HideWindowAction()
 
         elif data['type'] == 'imfeelinglucky':
@@ -138,6 +174,8 @@ class ItemEnterEventListener(EventListener):
             print("Extracting code stub")
             cmd = 'pyjoplin imfeelinglucky %s' % data['uid']
             proc = subprocess.Popen(cmd, shell=True)
+            extension.history_uids.append(data['uid'])
+            extension.history_uids.save()
             return HideWindowAction()
 
         elif data['type'] == 'new-search-and-note':
@@ -153,6 +191,8 @@ class ItemEnterEventListener(EventListener):
             # Create new note and edit it
             cmd = 'pyjoplin new_and_edit \'%s\' --notebook \'%s\'' % (query, 'search')
             proc = subprocess.Popen(cmd, shell=True)
+            # extension.history_uids.append(data['uid'])
+            # extension.history_uids.save()
             return HideWindowAction()
 
         elif data['type'] == 'new-note':
@@ -160,6 +200,8 @@ class ItemEnterEventListener(EventListener):
             query = data['str'].strip()
             cmd = 'pyjoplin new_and_edit \'%s\' --notebook \'%s\'' % (query, 'search')
             proc = subprocess.Popen(cmd, shell=True)
+            # extension.history_uids.append(data['uid'])
+            # extension.history_uids.save()
             return HideWindowAction()
 
         return False
