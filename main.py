@@ -56,8 +56,7 @@ class KeywordQueryEventListener(EventListener):
         else:
             if not extension.items:
                 # Populate default history view
-                extension.items, extension.history_uids =\
-                    create_default_items_list(extension.history_uids, do_history_clean=True)
+                extension.items = create_default_items_list(extension.history_uids, do_history_clean=True)
             else:
                 # Skip search, use same items as before (stored in extension)
                 pass

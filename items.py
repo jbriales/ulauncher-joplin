@@ -8,6 +8,7 @@ from ulauncher.api.shared.item.ExtensionSmallResultItem import ExtensionSmallRes
 from ulauncher.api.shared.action.ExtensionCustomAction import ExtensionCustomAction
 
 from responses import *
+from history import RecentHistory
 
 
 def create_note_item(note, idx_item):
@@ -78,7 +79,10 @@ def create_default_items_list(history_uids, do_history_clean=True):
     if do_history_clean:
         # Remove any not found history uids
         found_uids = [note['id'] for note in notes]
-        clean_history_uids = [uid for uid in history_uids if uid in found_uids]
+        notfound_uids = set(history_uids) - set(found_uids)
+        for notfound_uid in notfound_uids:
+            # NOTE: Use that argument is passed by reference to fix in place
+            history_uids.remove(notfound_uid)
 
     # Add entries from recent history
     for note in notes:
@@ -94,4 +98,4 @@ def create_default_items_list(history_uids, do_history_clean=True):
         )
     )
 
-    return items, clean_history_uids
+    return items
