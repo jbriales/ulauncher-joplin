@@ -1,6 +1,14 @@
 # coding=utf-8
 
-import pyjoplin
+try:
+    import pyjoplin
+except ImportError:
+    import notify2
+    notify2.init("ulauncher-joplin")
+    notify2.Notification(
+        "ERROR ulauncher-joplin",
+        message="Could not import pyjoplin"
+    ).show()
 
 from ulauncher.api.client.Extension import Extension
 from ulauncher.api.client.EventListener import EventListener
