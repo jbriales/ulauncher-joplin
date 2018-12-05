@@ -61,8 +61,15 @@ def open_new_note_action(str_search, do_websearch=False):
         browser = webbrowser.get('google-chrome')
         browser.open(url_google, new=1, autoraise=True)
 
+    # Check for keywords at the start of the search string to allocate in specific notebook
+    first_word = query.split(' ', 1)[0]
+    if first_word.lower() == 'fb':
+        notebook = 'fb'
+    else:
+        notebook = 'personal'
+
     # Create new note and edit it
-    new_uid = pyjoplin.new(query, notebook='search')
+    new_uid = pyjoplin.new(query, notebook=notebook)
     cmd = 'pyjoplin edit %s' % new_uid
     proc = subprocess.Popen(cmd, shell=True)
     return new_uid, HideWindowAction()
