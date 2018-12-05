@@ -56,14 +56,14 @@ def create_search_item(search_str):
         name='New search note: %s' % search_str,
         on_enter=ExtensionCustomAction(
             {
-                'func': open_new_search_and_note_action,
+                'func': open_new_note_with_websearch_action,
                 'str_search': search_str,
             },
             keep_app_open=True
         ),
         on_alt_enter=ExtensionCustomAction(
             {
-                'func': open_new_note_action,
+                'func': open_new_note_without_websearch_action,
                 'str_search': search_str,
             },
             keep_app_open=True

@@ -49,28 +49,29 @@ def imfeelinglucky_action(uid):
     return uid, HideWindowAction()
 
 
-def open_new_search_and_note_action(str_search):
-    # Open browser and create new note
-    query = str_search.strip()
-    # Build URL for Google search
-    url_google = "https://www.google.com/search?q=" + query.replace(' ', "+")
-    # Focus 'search' workspace now
-    subprocess.call("i3-msg workspace search", shell=True)
-    # Open new browser with Google and calendar search
-    browser = webbrowser.get('google-chrome')
-    browser.open(url_google, new=1, autoraise=True)
+def open_new_note_action(str_search, do_websearch=False):
+    query = str_search.strip()  # clean string ends
+
+    if do_websearch:
+        # Build URL for Google search
+        url_google = "https://www.google.com/search?q=" + query.replace(' ', "+")
+        # Focus 'search' workspace now
+        subprocess.call("i3-msg workspace search", shell=True)
+        # Open new browser with Google and calendar search
+        browser = webbrowser.get('google-chrome')
+        browser.open(url_google, new=1, autoraise=True)
+
     # Create new note and edit it
     new_uid = pyjoplin.new(query, notebook='search')
-
     cmd = 'pyjoplin edit %s' % new_uid
     proc = subprocess.Popen(cmd, shell=True)
     return new_uid, HideWindowAction()
 
 
-def open_new_note_action(str_search):
-    # Create new note and edit it
-    query = str_search.strip()
-    new_uid = pyjoplin.new(query, notebook='search')
-    cmd = 'pyjoplin edit %s' % new_uid
-    proc = subprocess.Popen(cmd, shell=True)
-    return new_uid, HideWindowAction()
+# NOTE: It seems ulauncher does not deal well with lambda functions, so create non-anonymous ones
+def open_new_note_with_websearch_action(str_search):
+    open_new_note_action(str_search, do_websearch=True)
+
+
+def open_new_note_without_websearch_action(str_search):
+    open_new_note_action(str_search, do_websearch=False)
