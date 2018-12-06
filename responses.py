@@ -63,8 +63,10 @@ def open_new_note_action(str_search, do_websearch=False):
 
     # Check for keywords at the start of the search string to allocate in specific notebook
     first_word = query.split(' ', 1)[0]
-    if first_word.lower() == 'fb':
+    if first_word.lower() == '#fb':
         notebook = 'fb'
+        rest_of_query = query.split(' ', 1)[1]
+        query = rest_of_query  # drop notebook keyword
     else:
         notebook = 'personal'
 
