@@ -79,8 +79,8 @@ def open_new_note_action(str_search, do_websearch=False):
 
 # NOTE: It seems ulauncher does not deal well with lambda functions, so create non-anonymous ones
 def open_new_note_with_websearch_action(str_search):
-    open_new_note_action(str_search, do_websearch=True)
+    return open_new_note_action(str_search, do_websearch=True)
 
 
 def open_new_note_without_websearch_action(str_search):
-    open_new_note_action(str_search, do_websearch=False)
+    return open_new_note_action(str_search, do_websearch=False)
