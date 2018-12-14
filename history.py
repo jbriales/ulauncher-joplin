@@ -5,7 +5,6 @@ Handle history of visited items
 import errno
 import os
 
-# Ensure history file exists (maybe empty first time)
 PATH_TEMP = '/tmp/ulauncher-joplin'
 try:
     os.makedirs(PATH_TEMP)
@@ -15,8 +14,18 @@ except OSError as exc:
     else:
         raise
 
-PATH_HISTORY = os.path.join(PATH_TEMP, 'history')
+PATH_CACHE = os.path.expanduser('~/.cache/ulauncher-joplin')
+try:
+    os.makedirs(PATH_CACHE)
+except OSError as exc:
+    if exc.errno == errno.EEXIST and os.path.isdir(PATH_CACHE):
+        pass
+    else:
+        raise
+
+PATH_HISTORY = os.path.join(PATH_CACHE, 'history')
 if not os.path.exists(PATH_HISTORY):
+    # Ensure history file exists (even if empty)
     with open(PATH_HISTORY, 'w') as f:
         f.write('')
 
