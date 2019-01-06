@@ -68,6 +68,10 @@ class KeywordQueryEventListener(EventListener):
                 item = create_note_item(note, idx_item)
                 extension.items.append(item)
 
+            if len(found_notes) > 0:
+                # Put web search proposal second (prefer first database entry by default)
+                extension.items[0], extension.items[1] = extension.items[1], extension.items[0]
+
         return RenderResultListAction(extension.items)
 
 
