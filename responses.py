@@ -71,7 +71,7 @@ def open_new_note_action(str_search, do_websearch=False):
         notebook = 'personal'
 
     # Create new note and edit it
-    new_uid = pyjoplin.new(query, notebook=notebook)
+    new_uid = pyjoplin.new(query, notebook_name=notebook)
     cmd = 'pyjoplin edit %s' % new_uid
     proc = subprocess.Popen(cmd, shell=True)
     return new_uid, HideWindowAction()
